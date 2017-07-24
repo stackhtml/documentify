@@ -25,6 +25,27 @@ Modular HTML bundler.
   https://opencollective.com/choo
 ```
 
+## Configuring transforms
+### Command Line
+```sh
+$ documentify ./index.html -t my-transform -t another-transform
+```
+
+### package.json
+```json
+{
+  "name": "my-app",
+  "version": "1.0.0",
+  "private": true,
+  "documentify": {
+    "transform": [
+      "my-transform",
+      "another-transform"
+    ]
+  }
+}
+```
+
 ## Writing transforms
 A transform is a regular function that returns a `through` stream. The
 `through` stream can modify the HTML stream, which in turn passes data to the
