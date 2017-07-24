@@ -1,0 +1,33 @@
+{
+  "name": "documentify",
+  "description": "Modular HTML bundler",
+  "repository": "stackhtml/documentify",
+  "version": "1.0.0",
+  "scripts": {
+    "deps": "dependency-check . && dependency-check . --extra --no-dev",
+    "start": "node .",
+    "test": "standard && npm run deps && ./bin.js ./example"
+  },
+  "dependencies": {
+    "ansi-escape-sequences": "^3.0.0",
+    "async-collection": "^1.0.1",
+    "fast-json-parse": "^1.0.2",
+    "findup": "^0.1.5",
+    "from2-string": "^1.1.0",
+    "minimist": "^1.2.0",
+    "pump": "^1.0.2",
+    "readable-stream": "^2.3.3"
+  },
+  "devDependencies": {
+    "dependency-check": "^2.9.1",
+    "standard": "^10.0.2",
+    "tape": "^4.7.0"
+  },
+  "keywords": [
+    "html",
+    "document",
+    "transform",
+    "stream"
+  ],
+  "license": "MIT"
+}
