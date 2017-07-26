@@ -82,7 +82,7 @@ Documentify.prototype.bundle = function () {
       source = fromString(self.defaultHtml)
       done()
     } else {
-      source = fs.createStream(entry)
+      source = fs.createReadStream(entry)
       done()
     }
   }
