@@ -70,7 +70,7 @@ Documentify.prototype.bundle = function () {
         var _transforms = t.map(function (transform) {
           return Array.isArray(transform) ? transform : [ transform ]
         })
-        self.transforms.concat(_transforms)
+        self.transforms = self.transforms.concat(_transforms)
         done()
       })
     })
