@@ -19,7 +19,7 @@ function Documentify (entry, opts) {
   this.entry = entry
 
   if (opts.transform) {
-    if (Array.isArray(opts.transform)) this.transforms.concat(opts.transform)
+    if (Array.isArray(opts.transform)) this.transforms = this.transforms.concat(opts.transform)
     else this.transforms.push(opts.transform)
   }
 }
