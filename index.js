@@ -19,7 +19,7 @@ function Documentify (entry, opts) {
   this.entry = entry
 
   if (opts.transform) {
-    if (Array.isArray(opts.transform)) this.transforms.concat(opts.transform)
+    if (Array.isArray(opts.transform)) this.transforms = this.transforms.concat(opts.transform)
     else this.transforms.push(opts.transform)
   }
 }
@@ -70,7 +70,7 @@ Documentify.prototype.bundle = function () {
         var _transforms = t.map(function (transform) {
           return Array.isArray(transform) ? transform : [ transform ]
         })
-        self.transforms.concat(_transforms)
+        self.transforms = self.transforms.concat(_transforms)
         done()
       })
     })
