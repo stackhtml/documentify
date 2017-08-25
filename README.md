@@ -62,7 +62,7 @@ function transform (opts) {
 ```
 
 ## API
-### `document = documentify(entry, [opts])`
+### `document = documentify(entry, [html], [opts])`
 Create a new documentify instance. If `entry` is a `.html` file, it'll be used
 as the source. Otherwise uses an empty HTML file with just a body and head as
 the source.

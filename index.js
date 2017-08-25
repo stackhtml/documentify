@@ -2,6 +2,7 @@ var parallel = require('async-collection').parallel
 var fromString = require('from2-string')
 var stream = require('readable-stream')
 var parse = require('fast-json-parse')
+var assert = require('assert')
 var findup = require('findup')
 var path = require('path')
 var pump = require('pump')
@@ -9,12 +10,18 @@ var fs = require('fs')
 
 module.exports = Documentify
 
-function Documentify (entry, opts) {
-  if (!(this instanceof Documentify)) return new Documentify(entry, opts)
+function Documentify (entry, html, opts) {
+  if (!(this instanceof Documentify)) return new Documentify(entry, html, opts)
+
+  assert.equal(typeof entry, 'string', 'documentify: entry should be type string')
+
+  if (html) {
+    assert.equal(typeof html, 'string', 'documentify: html should be type string')
+  }
 
   opts = opts || {}
 
-  this.defaultHtml = '<html><head></head><body></body></html>'
+  this.html = html || '<html><head></head><body></body></html>'
   this.transforms = []
   this.entry = entry
 
@@ -77,13 +84,7 @@ Documentify.prototype.bundle = function () {
   }
 
   function createSource (done) {
-    var entry = self.entry
-    if (path.extname(entry) !== '.html') {
-      source = fromString(self.defaultHtml)
-      done()
-    } else {
-      source = fs.createReadStream(entry)
-      done()
-    }
+    source = fromString(self.html)
+    done()
   }
 }
