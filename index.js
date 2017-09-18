@@ -21,7 +21,7 @@ function Documentify (entry, html, opts) {
 
   opts = opts || {}
 
-  this.html = html || '<html><head></head><body></body></html>'
+  this.html = html || '<!DOCTYPE html><html><head></head><body></body></html>'
   this.transforms = []
   this.entry = entry
 
