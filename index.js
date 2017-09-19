@@ -63,7 +63,9 @@ Documentify.prototype.bundle = function () {
   function findTransforms (done) {
     var entry = path.join(path.dirname(self.entry), path.basename(self.entry))
     findup(entry, 'package.json', function (err, pathname) {
-      if (err) return done(err)
+      // no package.json found - just run local transforms
+      if (err) return done()
+
       var filename = path.join(pathname, 'package.json')
       fs.readFile(filename, function (err, file) {
         if (err) return done(err)
