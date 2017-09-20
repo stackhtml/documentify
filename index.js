@@ -2,6 +2,9 @@ var parallel = require('async-collection').parallel
 var fromString = require('from2-string')
 var stream = require('readable-stream')
 var parse = require('fast-json-parse')
+var EventEmitter = require('events')
+var inherits = require('inherits')
+var resolve = require('resolve')
 var assert = require('assert')
 var findup = require('findup')
 var path = require('path')
@@ -12,6 +15,8 @@ module.exports = Documentify
 
 function Documentify (entry, html, opts) {
   if (!(this instanceof Documentify)) return new Documentify(entry, html, opts)
+
+  EventEmitter.call(this)
 
   assert.equal(typeof entry, 'string', 'documentify: entry should be type string')
 
@@ -24,6 +29,8 @@ function Documentify (entry, html, opts) {
   this.html = html || '<!DOCTYPE html><html><head></head><body></body></html>'
   this.transforms = []
   this.entry = entry
+  this.basedir = opts.basedir || process.cwd()
+  this._ready = true
 
   if (opts.transform) {
     if (Array.isArray(opts.transform)) this.transforms = this.transforms.concat(opts.transform)
@@ -31,8 +38,32 @@ function Documentify (entry, html, opts) {
   }
 }
 
+inherits(Documentify, EventEmitter)
+
+var placeholder = null
 Documentify.prototype.transform = function (transform, opts) {
-  this.transforms.push([ transform, opts ])
+  var self = this
+  opts = opts || {}
+  if (typeof transform === 'string') {
+    var index = this.transforms.length
+    var basedir = opts.basedir || this.basedir
+    this.transforms.push([ placeholder, opts ])
+    this._ready = false
+    resolve(transform, { basedir: basedir }, function (err, resolved) {
+      if (err) {
+        self.emit('error', err)
+      }
+      if (resolved) {
+        self.transforms[index][0] = require(resolved)
+      }
+      if (self.transforms.every(function (tuple) { return tuple[0] !== placeholder })) {
+        self.emit('_ready')
+        self._ready = true
+      }
+    })
+  } else {
+    this.transforms.push([ transform, opts ])
+  }
 }
 
 Documentify.prototype.bundle = function () {
@@ -40,23 +71,31 @@ Documentify.prototype.bundle = function () {
   var self = this
   var source
 
-  var tasks = [
-    findTransforms,
-    createSource
-  ]
-  parallel(tasks, function (err) {
-    if (err) return pts.emit('error', err)
-    var args = self.transforms.reduce(function (arr, tuple) {
-      var fn = tuple[0]
-      var opts = tuple[1] || {}
-      var transform = fn(opts)
-      arr.push(transform)
-      return arr
-    }, [source])
+  if (this._ready) {
+    onready()
+  } else {
+    this.on('_ready', onready)
+  }
 
-    args.push(pts)
-    pump.apply(pump, args)
-  })
+  function onready () {
+    var tasks = [
+      findTransforms,
+      createSource
+    ]
+    parallel(tasks, function (err) {
+      if (err) return pts.emit('error', err)
+      var args = self.transforms.reduce(function (arr, tuple) {
+        var fn = tuple[0]
+        var opts = tuple[1] || {}
+        var transform = fn(opts)
+        arr.push(transform)
+        return arr
+      }, [source])
+
+      args.push(pts)
+      pump.apply(pump, args)
+    })
+  }
 
   return pts
 
@@ -76,13 +115,32 @@ Documentify.prototype.bundle = function () {
         if (!d) return done()
         var t = d.transform
         if (!t || !Array.isArray(t)) return done()
-        var _transforms = t.map(function (transform) {
-          return Array.isArray(transform) ? transform : [ transform ]
+
+        loadTransforms(t, pathname, function (err, _transforms) {
+          if (err) return done(err)
+          self.transforms = self.transforms.concat(_transforms)
+          done()
         })
-        self.transforms = self.transforms.concat(_transforms)
-        done()
       })
     })
+  }
+
+  function loadTransforms (transforms, basedir, done) {
+    parallel(transforms.map(function (transform, index) {
+      var name = transform
+      var opts = {}
+      if (Array.isArray(transform)) {
+        name = transform[0]
+        opts = transform[1]
+      }
+
+      return function (done) {
+        resolve(name, { basedir: basedir }, function (err, resolved) {
+          if (err) return done(err)
+          done(null, [ require(resolved), opts ])
+        })
+      }
+    }), done)
   }
 
   function createSource (done) {
