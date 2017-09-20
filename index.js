@@ -33,8 +33,18 @@ function Documentify (entry, html, opts) {
   this._ready = true
 
   if (opts.transform) {
-    if (Array.isArray(opts.transform)) this.transforms = this.transforms.concat(opts.transform)
-    else this.transforms.push(opts.transform)
+    var self = this
+    var transforms = opts.transform
+    if (!Array.isArray(transforms)) {
+      transforms = [transforms]
+    }
+    transforms.forEach(function (t) {
+      if (Array.isArray(t)) {
+        self.transform(t[0], t[1])
+      } else {
+        self.transform(t)
+      }
+    })
   }
 }
 

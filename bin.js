@@ -14,6 +14,7 @@ var USAGE = `
 
     -h, --help        print usage
     -v, --version     print version
+    -t, --transform   add a transform
 
   Examples:
 
@@ -54,7 +55,10 @@ var argv = minimist(process.argv.slice(2), {
   } else if (argv.version) {
     console.log(require('./package.json').version)
   } else {
-    pump(Documentify(entry).bundle(), process.stdout, function (err) {
+    var bundler = Documentify(entry, null, {
+      transform: argv.transform
+    })
+    pump(bundler.bundle(), process.stdout, function (err) {
       if (err) {
         console.error(err)
         process.exit(1)
