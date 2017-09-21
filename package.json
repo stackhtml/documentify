@@ -15,12 +15,15 @@
     "fast-json-parse": "^1.0.2",
     "findup": "^0.1.5",
     "from2-string": "^1.1.0",
+    "inherits": "^2.0.3",
     "minimist": "^1.2.0",
     "pump": "^1.0.2",
-    "readable-stream": "^2.3.3"
+    "readable-stream": "^2.3.3",
+    "resolve": "^1.4.0"
   },
   "devDependencies": {
     "dependency-check": "^2.9.1",
+    "hyperstream": "^1.2.2",
     "standard": "^10.0.2",
     "tape": "^4.7.0"
   },
