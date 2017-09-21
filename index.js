@@ -20,6 +20,11 @@ function Documentify (entry, html, opts) {
 
   assert.equal(typeof entry, 'string', 'documentify: entry should be type string')
 
+  if (typeof html === 'object') {
+    opts = html
+    html = null
+  }
+
   if (html) {
     assert.equal(typeof html, 'string', 'documentify: html should be type string')
   }

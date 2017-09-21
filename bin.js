@@ -55,7 +55,7 @@ var argv = minimist(process.argv.slice(2), {
   } else if (argv.version) {
     console.log(require('./package.json').version)
   } else {
-    var bundler = Documentify(entry, null, {
+    var bundler = Documentify(entry, {
       transform: argv.transform
     })
     pump(bundler.bundle(), process.stdout, function (err) {
