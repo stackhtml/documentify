@@ -13,6 +13,8 @@ var fs = require('fs')
 
 module.exports = Documentify
 
+var defaultHtml = '<!DOCTYPE html><html><head></head><body></body></html>'
+
 function Documentify (entry, html, opts) {
   if (!(this instanceof Documentify)) return new Documentify(entry, html, opts)
 
@@ -31,7 +33,7 @@ function Documentify (entry, html, opts) {
 
   opts = opts || {}
 
-  this.html = html || '<!DOCTYPE html><html><head></head><body></body></html>'
+  this.html = html
   this.transforms = []
   this.entry = entry
   this.basedir = opts.basedir || process.cwd()
@@ -159,7 +161,17 @@ Documentify.prototype.bundle = function () {
   }
 
   function createSource (done) {
-    source = fromString(self.html)
-    done()
+    if (typeof self.html === 'string') {
+      source = fromString(self.html)
+      return done()
+    }
+    resolve(self.entry, { extensions: [ '.html' ] }, function (err, entry) {
+      if (err) {
+        source = fromString(defaultHtml)
+      } else {
+        source = fs.createReadStream(entry)
+      }
+      done()
+    })
   }
 }
