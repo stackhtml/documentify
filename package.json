@@ -7,7 +7,7 @@
   "scripts": {
     "deps": "dependency-check . && dependency-check . --extra --no-dev",
     "start": "node .",
-    "test": "standard && npm run deps && ./bin.js ./example"
+    "test": "standard && npm run deps && node test/index.js"
   },
   "dependencies": {
     "ansi-escape-sequences": "^3.0.0",
@@ -22,10 +22,13 @@
     "resolve": "^1.4.0"
   },
   "devDependencies": {
+    "assert-html": "^1.1.5",
+    "concat-stream": "^1.6.0",
+    "dedent": "^0.7.0",
     "dependency-check": "^2.9.1",
     "hyperstream": "^1.2.2",
     "standard": "^10.0.2",
-    "tape": "^4.7.0"
+    "tape": "^4.8.0"
   },
   "keywords": [
     "html",
