@@ -81,6 +81,8 @@ Documentify.prototype.transform = function (transform, opts) {
   } else {
     this.transforms.push([ transform, opts ])
   }
+
+  return this
 }
 
 Documentify.prototype.bundle = function () {
