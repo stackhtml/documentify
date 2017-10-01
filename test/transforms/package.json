@@ -1,0 +1,7 @@
+{
+  "documentify": {
+    "transform": [
+      "./transform"
+    ]
+  }
+}
