@@ -135,9 +135,9 @@ Documentify.prototype.bundle = function () {
         var t = d.transform
         if (!t || !Array.isArray(t)) return done()
 
-        loadTransforms(t, pathname, function (err, _transforms) {
+        loadTransforms(t, pathname, function (err, packageTransforms) {
           if (err) return done(err)
-          self.transforms = self.transforms.concat(_transforms)
+          self.transforms = packageTransforms.concat(self.transforms)
           done()
         })
       })
