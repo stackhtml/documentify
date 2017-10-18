@@ -2,7 +2,7 @@
   "name": "documentify",
   "description": "Modular HTML bundler",
   "repository": "stackhtml/documentify",
-  "version": "2.1.0",
+  "version": "3.0.0",
   "bin": "./bin.js",
   "scripts": {
     "deps": "dependency-check . && dependency-check . --extra --no-dev",
