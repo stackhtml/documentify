@@ -1,6 +1,7 @@
 var test = require('tape')
 var path = require('path')
 var Transform = require('readable-stream').Transform
+var PassThrough = require('readable-stream').PassThrough
 var concat = require('concat-stream')
 var documentify = require('../')
 
@@ -36,10 +37,31 @@ test('transforms', function (t) {
         t.equal(result, 'transform from package.json')
       }))
   })
+
+  t.test('should apply package.json transforms before programmatically configured transforms', function (t) {
+    t.plan(4)
+
+    documentify(path.join(__dirname, 'order/'))
+      .transform(function () { return append('.transform append') })
+      .transform(function () { return prepend('.transform prepend') })
+      .bundle()
+      .pipe(concat({ encoding: 'string' }, function (result) {
+        var lines = result.split(/\n/g)
+        t.equal(lines.shift(), '.transform prepend')
+        t.equal(lines.shift(), 'package.json prepend')
+        t.equal(lines.pop(), '.transform append')
+        t.equal(lines.pop(), 'package.json append')
+      }))
+  })
 })
 
+function prepend (text) {
+  var ps = PassThrough()
+  ps.push(text + '\n')
+  return ps
+}
 function append (text) {
-  return new Transform({
+  return Transform({
     write (chunk, enc, cb) {
       this.push(chunk)
       cb()
