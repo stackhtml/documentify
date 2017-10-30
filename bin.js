@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var ansi = require('ansi-escape-sequences')
-var minimist = require('minimist')
+var subarg = require('subarg')
 var path = require('path')
 var pump = require('pump')
 
@@ -28,7 +28,7 @@ var USAGE = `
   ${clr('https://opencollective.com/choo', 'cyan')}
 `.replace(/\n$/, '').replace(/^\n/, '')
 
-var argv = minimist(process.argv.slice(2), {
+var argv = subarg(process.argv.slice(2), {
   alias: {
     help: 'h',
     version: 'v',
@@ -56,7 +56,7 @@ var argv = minimist(process.argv.slice(2), {
     console.log(require('./package.json').version)
   } else {
     var bundler = Documentify(entry, {
-      transform: argv.transform
+      transform: normalizeTransforms(argv.transform)
     })
     pump(bundler.bundle(), process.stdout, function (err) {
       if (err) {
@@ -69,4 +69,19 @@ var argv = minimist(process.argv.slice(2), {
 
 function clr (text, color) {
   return process.stdout.isTTY ? ansi.format(text, color) : text
+}
+
+function normalizeTransforms (transforms) {
+  if (!Array.isArray(transforms)) transforms = [transforms]
+  return transforms.map(function (t) {
+    if (typeof t === 'object' && Array.isArray(t._)) {
+      var name = t._[0]
+      delete t._
+      return [name, t]
+    }
+    if (Array.isArray(t)) {
+      return t
+    }
+    return [t, {}]
+  })
 }
