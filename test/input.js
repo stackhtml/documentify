@@ -44,30 +44,7 @@ test('input', function (t) {
       }))
   })
 
-  t.test('accepts a stream without options provided', function (t) {
-    t.plan(10)
-
-    var sourceHtml = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>test</title>
-      </head>
-      <body>
-        beep boop
-      </body>
-      </html>
-    `.replace(/\n +/g, '')
-    var sourceStream = fromString(sourceHtml)
-
-    documentify(null, sourceStream)
-      .bundle()
-      .pipe(concat({ encoding: 'string' }, function (html) {
-        assertHtml(t, sourceHtml, html)
-      }))
-  })
-
-  t.test('accepts a stream', function (t) {
+  t.test('accepts a html stream', function (t) {
     t.plan(10)
 
     var sourceHtml = `
@@ -84,6 +61,29 @@ test('input', function (t) {
     var sourceStream = fromString(sourceHtml)
 
     documentify(null, sourceStream, {})
+      .bundle()
+      .pipe(concat({ encoding: 'string' }, function (html) {
+        assertHtml(t, sourceHtml, html)
+      }))
+  })
+
+  t.test('accepts a html stream without options provided', function (t) {
+    t.plan(10)
+
+    var sourceHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>test</title>
+      </head>
+      <body>
+        beep boop
+      </body>
+      </html>
+    `.replace(/\n +/g, '')
+    var sourceStream = fromString(sourceHtml)
+
+    documentify(null, sourceStream)
       .bundle()
       .pipe(concat({ encoding: 'string' }, function (html) {
         assertHtml(t, sourceHtml, html)
