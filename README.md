@@ -68,9 +68,9 @@ function transform (opts) {
 ### `document = documentify(entry, [html], [opts])`
 Create a new documentify instance. If `entry` is a `.html` file, it'll be
 used as the source. If `entry` is falsy and `html` is a string or readable
-stream, that will be used as the input instead. Otherwise `entry` is falsey
-and `html` is omitted, it uses an empty HTML file with just a body and head
-as the source.
+stream, that will be used as the input instead. Otherwise if `entry` is falsy
+and `html` is omitted, an empty HTML file with just a body and head will be
+used as the source.
 
 ### `document.transform(fn, [opts])`
 Pass a transform to the document instance
