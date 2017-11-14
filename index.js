@@ -16,7 +16,7 @@ module.exports = Documentify
 var defaultHtml = '<!DOCTYPE html><html><head></head><body></body></html>'
 
 function isStream (maybe) {
-  return !!maybe && typeof maybe === 'object' && typeof maybe.pipe === 'function'
+  return maybe !== null && typeof maybe === 'object' && typeof maybe.pipe === 'function'
 }
 
 function Documentify (entry, html, opts) {
