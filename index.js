@@ -24,17 +24,17 @@ function Documentify (entry, html, opts) {
 
   EventEmitter.call(this)
 
-  if (typeof entry !== 'string' && !isStream(entry)) {
-    assert(false, 'documentify: entry should be type string or a stream')
+  if (entry) {
+    assert.equal(typeof entry, 'string', 'documentify: entry should be type string')
   }
 
-  if (typeof html === 'object') {
+  if (typeof html === 'object' && !isStream(html)) {
     opts = html
     html = null
   }
 
-  if (html) {
-    assert.equal(typeof html, 'string', 'documentify: html should be type string')
+  if (html && !isStream(html)) {
+    assert.equal(typeof html, 'string', 'documentify: html should be type string or stream')
   }
 
   opts = opts || {}
@@ -125,7 +125,7 @@ Documentify.prototype.bundle = function () {
   return pts
 
   function findTransforms (done) {
-    var entry = isStream(self.entry) ? self.basedir : path.join(path.dirname(self.entry), path.basename(self.entry))
+    var entry = self.entry ? path.join(path.dirname(self.entry), path.basename(self.entry)) : self.basedir
     findup(entry, 'package.json', function (err, pathname) {
       // no package.json found - just run local transforms
       if (err) return done()
@@ -169,22 +169,17 @@ Documentify.prototype.bundle = function () {
   }
 
   function createSource (done) {
-    if (typeof self.html === 'string') {
-      source = fromString(self.html)
+    if (typeof self.html === 'string' || isStream(self.html)) {
+      source = isStream(self.html) ? self.html : fromString(self.html)
       return done()
     }
-    if (isStream(self.entry)) {
-      source = self.entry
+    resolve(self.entry, { extensions: [ '.html' ] }, function (err, entry) {
+      if (err) {
+        source = fromString(defaultHtml)
+      } else {
+        source = fs.createReadStream(entry)
+      }
       done()
-    } else {
-      resolve(self.entry, { extensions: [ '.html' ] }, function (err, entry) {
-        if (err) {
-          source = fromString(defaultHtml)
-        } else {
-          source = fs.createReadStream(entry)
-        }
-        done()
-      })
-    }
+    })
   }
 }

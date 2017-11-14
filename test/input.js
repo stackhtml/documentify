@@ -8,21 +8,18 @@ var fromString = require('from2-string')
 
 test('input', function (t) {
   t.test('throws if the input is not a string', function (t) {
-    t.plan(6)
+    t.plan(3)
 
-    var notAString = [
+    var truthyButNotAString = [
       12,
-      null,
-      undefined,
       {foo: 'bar'},
-      true,
-      false
+      true
     ]
 
-    for (var i = 0; i < notAString.length; i++) {
+    for (var i = 0; i < truthyButNotAString.length; i++) {
       t.throws(function () {
-        documentify(notAString[i]).bundle()
-      }, /entry should be type string or a stream/)
+        documentify(truthyButNotAString[i]).bundle()
+      }, /entry should be type string/)
     }
   })
 
@@ -47,6 +44,29 @@ test('input', function (t) {
       }))
   })
 
+  t.test('accepts a stream without options provided', function (t) {
+    t.plan(10)
+
+    var sourceHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>test</title>
+      </head>
+      <body>
+        beep boop
+      </body>
+      </html>
+    `.replace(/\n +/g, '')
+    var sourceStream = fromString(sourceHtml)
+
+    documentify(null, sourceStream)
+      .bundle()
+      .pipe(concat({ encoding: 'string' }, function (html) {
+        assertHtml(t, sourceHtml, html)
+      }))
+  })
+
   t.test('accepts a stream', function (t) {
     t.plan(10)
 
@@ -63,7 +83,7 @@ test('input', function (t) {
     `.replace(/\n +/g, '')
     var sourceStream = fromString(sourceHtml)
 
-    documentify(sourceStream, {})
+    documentify(null, sourceStream, {})
       .bundle()
       .pipe(concat({ encoding: 'string' }, function (html) {
         assertHtml(t, sourceHtml, html)

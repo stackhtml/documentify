@@ -45,13 +45,14 @@ var argv = subarg(process.argv.slice(2), {
 
 ;(function main (argv) {
   var entry = argv._[0]
+  var html = null
 
-  if (process.stdin.isTTY) {
-    // If entry isn't an absolute path, convert to absolute path
-    if (!entry) entry = process.cwd()
-    if (!/^\//.test(entry)) entry = path.join(process.cwd(), entry)
-  } else {
-    entry = process.stdin
+  // If entry isn't an absolute path, convert to absolute path
+  if (!entry) entry = process.cwd()
+  if (!/^\//.test(entry)) entry = path.join(process.cwd(), entry)
+
+  if (!process.stdin.isTTY) {
+    html = process.stdin
   }
 
   if (argv.help) {
@@ -59,7 +60,7 @@ var argv = subarg(process.argv.slice(2), {
   } else if (argv.version) {
     console.log(require('./package.json').version)
   } else {
-    var bundler = Documentify(entry, {
+    var bundler = Documentify(entry, html, {
       transform: normalizeTransforms(argv.transform)
     })
     pump(bundler.bundle(), process.stdout, function (err) {
