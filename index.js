@@ -15,12 +15,18 @@ module.exports = Documentify
 
 var defaultHtml = '<!DOCTYPE html><html><head></head><body></body></html>'
 
+function isStream (maybe) {
+  return !!maybe && typeof maybe === 'object' && typeof maybe.pipe === 'function'
+}
+
 function Documentify (entry, html, opts) {
   if (!(this instanceof Documentify)) return new Documentify(entry, html, opts)
 
   EventEmitter.call(this)
 
-  assert.equal(typeof entry, 'string', 'documentify: entry should be type string')
+  if (typeof entry !== 'string' && !isStream(entry)) {
+    assert(false, 'documentify: entry should be type string or a stream')
+  }
 
   if (typeof html === 'object') {
     opts = html
@@ -119,7 +125,7 @@ Documentify.prototype.bundle = function () {
   return pts
 
   function findTransforms (done) {
-    var entry = path.join(path.dirname(self.entry), path.basename(self.entry))
+    var entry = isStream(self.entry) ? self.basedir : path.join(path.dirname(self.entry), path.basename(self.entry))
     findup(entry, 'package.json', function (err, pathname) {
       // no package.json found - just run local transforms
       if (err) return done()
@@ -167,13 +173,18 @@ Documentify.prototype.bundle = function () {
       source = fromString(self.html)
       return done()
     }
-    resolve(self.entry, { extensions: [ '.html' ] }, function (err, entry) {
-      if (err) {
-        source = fromString(defaultHtml)
-      } else {
-        source = fs.createReadStream(entry)
-      }
+    if (isStream(self.entry)) {
+      source = self.entry
       done()
-    })
+    } else {
+      resolve(self.entry, { extensions: [ '.html' ] }, function (err, entry) {
+        if (err) {
+          source = fromString(defaultHtml)
+        } else {
+          source = fs.createReadStream(entry)
+        }
+        done()
+      })
+    }
   }
 }

@@ -46,9 +46,13 @@ var argv = subarg(process.argv.slice(2), {
 ;(function main (argv) {
   var entry = argv._[0]
 
-  // If entry isn't an absolute path, convert to absolute path
-  if (!entry) entry = process.cwd()
-  if (!/^\//.test(entry)) entry = path.join(process.cwd(), entry)
+  if (process.stdin.isTTY) {
+    // If entry isn't an absolute path, convert to absolute path
+    if (!entry) entry = process.cwd()
+    if (!/^\//.test(entry)) entry = path.join(process.cwd(), entry)
+  } else {
+    entry = process.stdin
+  }
 
   if (argv.help) {
     console.log(USAGE)
@@ -72,6 +76,7 @@ function clr (text, color) {
 }
 
 function normalizeTransforms (transforms) {
+  if (!transforms) return []
   if (!Array.isArray(transforms)) transforms = [transforms]
   return transforms.map(function (t) {
     if (typeof t === 'object' && Array.isArray(t._)) {

@@ -4,8 +4,28 @@ var documentify = require('../')
 var concat = require('concat-stream')
 var assertHtml = require('assert-html')
 var dedent = require('dedent')
+var fromString = require('from2-string')
 
 test('input', function (t) {
+  t.test('throws if the input is not a string', function (t) {
+    t.plan(6)
+
+    var notAString = [
+      12,
+      null,
+      undefined,
+      {foo: 'bar'},
+      true,
+      false
+    ]
+
+    for (var i = 0; i < notAString.length; i++) {
+      t.throws(function () {
+        documentify(notAString[i]).bundle()
+      }, /entry should be type string or a stream/)
+    }
+  })
+
   t.test('uses input text if specified', function (t) {
     t.plan(10)
     var sourceHtml = `
@@ -21,6 +41,29 @@ test('input', function (t) {
     `.replace(/\n +/g, '')
 
     documentify(path.join(__dirname, 'test.html'), sourceHtml)
+      .bundle()
+      .pipe(concat({ encoding: 'string' }, function (html) {
+        assertHtml(t, sourceHtml, html)
+      }))
+  })
+
+  t.test('accepts a stream', function (t) {
+    t.plan(10)
+
+    var sourceHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>test</title>
+      </head>
+      <body>
+        beep boop
+      </body>
+      </html>
+    `.replace(/\n +/g, '')
+    var sourceStream = fromString(sourceHtml)
+
+    documentify(sourceStream, {})
       .bundle()
       .pipe(concat({ encoding: 'string' }, function (html) {
         assertHtml(t, sourceHtml, html)
