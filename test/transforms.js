@@ -1,7 +1,6 @@
 var test = require('tape')
 var path = require('path')
 var Transform = require('readable-stream').Transform
-var PassThrough = require('readable-stream').PassThrough
 var concat = require('concat-stream')
 var documentify = require('../')
 
@@ -47,18 +46,24 @@ test('transforms', function (t) {
       .bundle()
       .pipe(concat({ encoding: 'string' }, function (result) {
         var lines = result.split(/\n/g)
-        t.equal(lines.shift(), '.transform prepend')
-        t.equal(lines.shift(), 'package.json prepend')
-        t.equal(lines.pop(), '.transform append')
-        t.equal(lines.pop(), 'package.json append')
+        t.equal(lines[0], '.transform prepend')
+        t.equal(lines[1], 'package.json prepend')
+        t.equal(lines[lines.length - 2], 'package.json append')
+        t.equal(lines[lines.length - 1], '.transform append')
       }))
   })
 })
 
 function prepend (text) {
-  var ps = PassThrough()
-  ps.push(text + '\n')
-  return ps
+  var first = true
+  return Transform({
+    write (chunk, enc, cb) {
+      if (first) this.push(text + '\n')
+      first = false
+      this.push(chunk)
+      cb()
+    }
+  })
 }
 function append (text) {
   return Transform({

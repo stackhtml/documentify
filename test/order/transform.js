@@ -1,7 +1,13 @@
-var PassThrough = require('readable-stream').PassThrough
+var Transform = require('readable-stream').Transform
 
 module.exports = function () {
-  var ps = PassThrough()
-  ps.push('package.json prepend\n')
-  return ps
+  var first = true
+  return Transform({
+    transform (chunk, enc, cb) {
+      if (first) this.push('package.json prepend\n')
+      first = false
+      this.push(chunk)
+      cb(null)
+    }
+  })
 }
