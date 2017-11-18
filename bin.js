@@ -45,17 +45,22 @@ var argv = subarg(process.argv.slice(2), {
 
 ;(function main (argv) {
   var entry = argv._[0]
+  var html = null
 
   // If entry isn't an absolute path, convert to absolute path
   if (!entry) entry = process.cwd()
   if (!/^\//.test(entry)) entry = path.join(process.cwd(), entry)
+
+  if (!process.stdin.isTTY) {
+    html = process.stdin
+  }
 
   if (argv.help) {
     console.log(USAGE)
   } else if (argv.version) {
     console.log(require('./package.json').version)
   } else {
-    var bundler = Documentify(entry, {
+    var bundler = Documentify(entry, html, {
       transform: normalizeTransforms(argv.transform)
     })
     pump(bundler.bundle(), process.stdout, function (err) {
@@ -72,6 +77,7 @@ function clr (text, color) {
 }
 
 function normalizeTransforms (transforms) {
+  if (!transforms) return []
   if (!Array.isArray(transforms)) transforms = [transforms]
   return transforms.map(function (t) {
     if (typeof t === 'object' && Array.isArray(t._)) {

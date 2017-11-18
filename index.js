@@ -15,20 +15,26 @@ module.exports = Documentify
 
 var defaultHtml = '<!DOCTYPE html><html><head></head><body></body></html>'
 
+function isStream (maybe) {
+  return maybe !== null && typeof maybe === 'object' && typeof maybe.pipe === 'function'
+}
+
 function Documentify (entry, html, opts) {
   if (!(this instanceof Documentify)) return new Documentify(entry, html, opts)
 
   EventEmitter.call(this)
 
-  assert.equal(typeof entry, 'string', 'documentify: entry should be type string')
+  if (entry) {
+    assert.equal(typeof entry, 'string', 'documentify: entry should be type string')
+  }
 
-  if (typeof html === 'object') {
+  if (typeof html === 'object' && !isStream(html)) {
     opts = html
     html = null
   }
 
-  if (html) {
-    assert.equal(typeof html, 'string', 'documentify: html should be type string')
+  if (html && !isStream(html)) {
+    assert.equal(typeof html, 'string', 'documentify: html should be type string or stream')
   }
 
   opts = opts || {}
@@ -119,7 +125,7 @@ Documentify.prototype.bundle = function () {
   return pts
 
   function findTransforms (done) {
-    var entry = path.join(path.dirname(self.entry), path.basename(self.entry))
+    var entry = self.entry ? path.join(path.dirname(self.entry), path.basename(self.entry)) : self.basedir
     findup(entry, 'package.json', function (err, pathname) {
       // no package.json found - just run local transforms
       if (err) return done()
@@ -163,8 +169,8 @@ Documentify.prototype.bundle = function () {
   }
 
   function createSource (done) {
-    if (typeof self.html === 'string') {
-      source = fromString(self.html)
+    if (typeof self.html === 'string' || isStream(self.html)) {
+      source = isStream(self.html) ? self.html : fromString(self.html)
       return done()
     }
     resolve(self.entry, { extensions: [ '.html' ] }, function (err, entry) {
