@@ -69,12 +69,12 @@ Documentify.prototype.transform = function (transform, opts) {
   var self = this
   opts = opts || {}
 
-  if (!opts.order) opts = Object.assign({}, opts, { order: 'main' })
+  var internalOpts = { order: opts.order || 'main' }
 
   if (typeof transform === 'string') {
     var index = this.transforms.length
     var basedir = opts.basedir || this.basedir
-    this.transforms.push([ placeholder, opts ])
+    this.transforms.push([ placeholder, opts, internalOpts ])
     this._ready = false
     resolve(transform, { basedir: basedir }, function (err, resolved) {
       if (err) {
@@ -89,7 +89,7 @@ Documentify.prototype.transform = function (transform, opts) {
       }
     })
   } else {
-    this.transforms.push([ transform, opts ])
+    this.transforms.push([ transform, opts, internalOpts ])
   }
 
   return this
@@ -105,7 +105,8 @@ Documentify.prototype.createPipeline = function () {
   this.transforms.forEach(function (tuple) {
     var fn = tuple[0]
     var opts = tuple[1]
-    var label = opts && opts.order
+    var internalOpts = tuple[2]
+    var label = internalOpts.order
     var transform = fn(opts)
     pipeline.get(label).push(transform)
   })
@@ -175,12 +176,12 @@ Documentify.prototype.bundle = function () {
       }
 
       // Run package.json transforms first by default.
-      if (!opts.order) opts.order = 'start'
+      var internalOpts = { order: opts.order || 'start' }
 
       return function (done) {
         resolve(name, { basedir: basedir }, function (err, resolved) {
           if (err) return done(err)
-          done(null, [ require(resolved), opts ])
+          done(null, [ require(resolved), opts, internalOpts ])
         })
       }
     }), done)
