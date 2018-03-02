@@ -52,6 +52,18 @@ test('transforms', function (t) {
         t.equal(lines[lines.length - 1], '.transform append')
       }))
   })
+
+  t.test('should accept primitives as option value', function (t) {
+    t.plan(1)
+
+    documentify(testPath)
+      .transform(function (opt) { return append(opt) }, 'whatever')
+      .bundle()
+      .pipe(concat({ encoding: 'string' }, function (result) {
+        var lines = result.split(/\n/g)
+        t.equal(lines[lines.length - 1], 'whatever')
+      }))
+  })
 })
 
 function prepend (text) {
