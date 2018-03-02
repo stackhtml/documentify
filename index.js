@@ -1,4 +1,5 @@
 var parallel = require('async-collection').parallel
+var splicer = require('labeled-stream-splicer')
 var fromString = require('from2-string')
 var stream = require('readable-stream')
 var parse = require('fast-json-parse')
@@ -67,6 +68,9 @@ var placeholder = null
 Documentify.prototype.transform = function (transform, opts) {
   var self = this
   opts = opts || {}
+
+  if (!opts.order) opts = Object.assign({}, opts, { order: 'main' })
+
   if (typeof transform === 'string') {
     var index = this.transforms.length
     var basedir = opts.basedir || this.basedir
@@ -91,6 +95,24 @@ Documentify.prototype.transform = function (transform, opts) {
   return this
 }
 
+Documentify.prototype.createPipeline = function () {
+  var pipeline = splicer([
+    'start', [],
+    'main', [],
+    'end', []
+  ])
+
+  this.transforms.forEach(function (tuple) {
+    var fn = tuple[0]
+    var opts = tuple[1]
+    var label = opts && opts.order
+    var transform = fn(opts)
+    pipeline.get(label).push(transform)
+  })
+
+  return pipeline
+}
+
 Documentify.prototype.bundle = function () {
   var pts = new stream.PassThrough()
   var self = this
@@ -109,16 +131,9 @@ Documentify.prototype.bundle = function () {
     ]
     parallel(tasks, function (err) {
       if (err) return pts.emit('error', err)
-      var args = self.transforms.reduce(function (arr, tuple) {
-        var fn = tuple[0]
-        var opts = tuple[1] || {}
-        var transform = fn(opts)
-        arr.push(transform)
-        return arr
-      }, [source])
+      var pipeline = self.createPipeline()
 
-      args.push(pts)
-      pump.apply(pump, args)
+      pump(source, pipeline, pts)
     })
   }
 
@@ -158,6 +173,9 @@ Documentify.prototype.bundle = function () {
         name = transform[0]
         opts = transform[1]
       }
+
+      // Run package.json transforms first by default.
+      if (!opts.order) opts.order = 'start'
 
       return function (done) {
         resolve(name, { basedir: basedir }, function (err, resolved) {
