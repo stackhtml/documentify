@@ -12,7 +12,7 @@ test('input', function (t) {
 
     var truthyButNotAString = [
       12,
-      {foo: 'bar'},
+      { foo: 'bar' },
       true
     ]
 

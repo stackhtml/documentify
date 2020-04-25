@@ -26,7 +26,7 @@ function Documentify (entry, html, opts) {
   EventEmitter.call(this)
 
   if (entry) {
-    assert.equal(typeof entry, 'string', 'documentify: entry should be type string')
+    assert.strictEqual(typeof entry, 'string', 'documentify: entry should be type string')
   }
 
   if (typeof html === 'object' && !isStream(html)) {
@@ -35,7 +35,7 @@ function Documentify (entry, html, opts) {
   }
 
   if (html && !isStream(html)) {
-    assert.equal(typeof html, 'string', 'documentify: html should be type string or stream')
+    assert.strictEqual(typeof html, 'string', 'documentify: html should be type string or stream')
   }
 
   opts = opts || {}
@@ -74,7 +74,7 @@ Documentify.prototype.transform = function (transform, opts) {
   if (typeof transform === 'string') {
     var index = this.transforms.length
     var basedir = opts.basedir || this.basedir
-    this.transforms.push([ placeholder, opts, internalOpts ])
+    this.transforms.push([placeholder, opts, internalOpts])
     this._ready = false
     resolve(transform, { basedir: basedir }, function (err, resolved) {
       if (err) {
@@ -89,7 +89,7 @@ Documentify.prototype.transform = function (transform, opts) {
       }
     })
   } else {
-    this.transforms.push([ transform, opts, internalOpts ])
+    this.transforms.push([transform, opts, internalOpts])
   }
 
   return this
@@ -181,7 +181,7 @@ Documentify.prototype.bundle = function () {
       return function (done) {
         resolve(name, { basedir: basedir }, function (err, resolved) {
           if (err) return done(err)
-          done(null, [ require(resolved), opts, internalOpts ])
+          done(null, [require(resolved), opts, internalOpts])
         })
       }
     }), done)
@@ -192,7 +192,7 @@ Documentify.prototype.bundle = function () {
       source = isStream(self.html) ? self.html : fromString(self.html)
       return done()
     }
-    resolve(self.entry, { extensions: [ '.html' ] }, function (err, entry) {
+    resolve(self.entry, { extensions: ['.html'] }, function (err, entry) {
       if (err) {
         source = fromString(defaultHtml)
       } else {
